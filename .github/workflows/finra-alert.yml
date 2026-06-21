@@ -49,3 +49,17 @@ jobs:
               title: `Short-volume spike alert ${today}`,
               body
             });
+
+      - name: Email alert
+        if: steps.run.outputs.has_alerts == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "FINRA short-volume spike alert"
+          to: ${{ secrets.MAIL_TO }}
+          from: FINRA Alerts <${{ secrets.MAIL_USERNAME }}>
+          body: file://alerts.md
