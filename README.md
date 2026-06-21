@@ -56,3 +56,22 @@ rolling window (last window+5 days) so the repo never bloats.
 The universe screener is a discovery list, not edge. Tested on ~4,600 stocks, short
 spikes had no reliable tradable direction. Use it to notice unusual activity on names
 you then judge for yourself.
+
+## Email to a custom address (SMTP)
+The workflow also emails the alert to any address via SMTP. Set these in
+**Settings -> Secrets and variables -> Actions -> New repository secret**:
+
+| secret | example | notes |
+|--------|---------|-------|
+| `MAIL_SERVER` | `smtp.gmail.com` | your provider's SMTP host |
+| `MAIL_PORT` | `465` | 465 (SSL). Outlook: `smtp-mail.outlook.com` / `587` |
+| `MAIL_USERNAME` | `you@gmail.com` | the sending account |
+| `MAIL_PASSWORD` | `abcd efgh ijkl mnop` | **app password**, not your login password |
+| `MAIL_TO` | `other@address.com` | where alerts are delivered |
+
+Gmail: enable 2-factor auth, then create an **App password** (Google Account ->
+Security -> App passwords) and use that as `MAIL_PASSWORD`. The recipient
+(`MAIL_TO`) can be any address, no GitHub account needed.
+
+The GitHub issue step still runs too (a log in the repo); delete that step from the
+workflow if you only want the email.
