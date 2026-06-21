@@ -1,0 +1,51 @@
+name: FINRA short-volume alerts
+
+on:
+  schedule:
+    # ~23:00 UTC on weekdays (after US close). Adjust if you like.
+    - cron: "0 23 * * 1-5"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install requests pandas
+
+      - name: Run alert check
+        id: run
+        run: python alert.py
+
+      - name: Commit updated history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/short_history.csv
+          git commit -m "update short-volume history" || echo "nothing to commit"
+          git push || echo "nothing to push"
+
+      - name: Open issue on alerts
+        if: steps.run.outputs.has_alerts == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('alerts.md', 'utf8');
+            const today = new Date().toISOString().slice(0, 10);
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Short-volume spike alert ${today}`,
+              body
+            });
